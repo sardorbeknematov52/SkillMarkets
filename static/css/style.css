@@ -1,0 +1,179 @@
+/* Общие стили */
+body {
+    padding-top: 20px;
+    background-color: #f8f9fa;
+}
+
+/* Jumbotron */
+.jumbotron {
+    background-color: #f8f9fa;
+    padding: 40px 20px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+}
+
+/* Карточки */
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 10px;
+}
+
+.card-header {
+    background-color: #f1f3f5;
+    border-bottom: 2px solid #dee2e6;
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Кнопки */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    border-radius: 5px;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    border-radius: 5px;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Алерты */
+.alert {
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.alert-error, .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+}
+
+/* Навигация */
+.navbar {
+    margin-bottom: 20px;
+    border-radius: 0;
+}
+
+/* Формы */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Таблицы */
+.table {
+    background-color: white;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Sticky элементы */
+.sticky-top {
+    position: sticky;
+    top: 20px;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Модальные окна */
+.modal-content {
+    border-radius: 10px;
+}
+
+/* Звезды рейтинга */
+.text-warning {
+    color: #ffc107 !important;
+}
+
+/* Маленький текст */
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Списки */
+.list-group-item {
+    border-left: 0;
+    border-right: 0;
+}
+
+.list-group-item:first-child {
+    border-top: 0;
+}
+
+.list-group-item:last-child {
+    border-bottom: 0;
+}
+
+/* Отступы */
+.mb-4 { margin-bottom: 1.5rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.ms-2 { margin-left: 0.5rem !important; }
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .sticky-top {
+        position: static;
+    }
+}

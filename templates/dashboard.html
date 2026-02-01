@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет - SkillMarket{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Личный кабинет</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changeRoleModal">
+            Изменить роль: {{ "Репетитор" if user.role == "tutor" else "Студент" }}
+        </button>
+    </div>
+</div>
+
+{% if is_student %}
+<!-- Для студента -->
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Мои бронирования</h5>
+            </div>
+            <div class="card-body">
+                {% if bookings %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Репетитор</th>
+                                <th>Курс</th>
+                                <th>Дата</th>
+                                <th>Время</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr>
+                                <td>{{ booking.tutor.username }}</td>
+                                <td>{{ booking.course.title }}</td>
+                                <td>{{ booking.booking_date }}</td>
+                                <td>{{ booking.booking_time }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if booking.status == 'confirmed' else 'warning' if booking.status == 'pending' else 'danger' if booking.status == 'cancelled' else 'info' if booking.status == 'completed' else 'secondary' }}">
+                                        {{ booking.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if booking.status == 'confirmed' %}
+                                    <!-- Проверяем, оплачено ли уже -->
+                                    {% set transaction = booking.transactions|selectattr('status', 'equalto', 'completed')|list|first %}
+                                    {% if transaction %}
+                                    <span class="badge bg-success">Оплачено</span>
+                                    <a href="{{ url_for('chat_room', recipient_id=booking.tutor_id) }}" class="btn btn-sm btn-info">Чат</a>
+                                    {% else %}
+                                    <a href="{{ url_for('payment', booking_id=booking.id) }}" class="btn btn-sm btn-success">Оплатить</a>
+                                    {% endif %}
+                                    <a href="{{ url_for('manage_booking', booking_id=booking.id, action='cancel') }}" class="btn btn-sm btn-danger" onclick="return confirm('Отменить бронирование?')">Отменить</a>
+                                    
+                                    {% elif booking.status == 'completed' %}
+                                    <!-- Проверяем, оставлен ли отзыв -->
+                                    {% set review = booking.reviews|first %}
+                                    {% if review %}
+                                    <span class="badge bg-info">Отзыв оставлен</span>
+                                    {% else %}
+                                    <a href="{{ url_for('submit_review', booking_id=booking.id) }}" class="btn btn-sm btn-warning">Оставить отзыв</a>
+                                    {% endif %}
+                                    <a href="{{ url_for('chat_room', recipient_id=booking.tutor_id) }}" class="btn btn-sm btn-info">Чат</a>
+                                    
+                                    {% elif booking.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Ожидает подтверждения</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">У вас пока нет бронирований</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Подписки</h5>
+            </div>
+            <div class="card-body">
+                {% if subscriptions %}
+                <ul class="list-group">
+                    {% for tutor in subscriptions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('tutor_profile', tutor_id=tutor.id) }}">{{ tutor.username }}</a>
+                        <a href="{{ url_for('subscribe', tutor_id=tutor.id) }}" class="btn btn-sm btn-outline-danger">Отписаться</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Вы ни на кого не подписаны</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Избранное</h5>
+            </div>
+            <div class="card-body">
+                {% if favorites %}
+                <ul class="list-group">
+                    {% for favorite in favorites %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('tutor_profile', tutor_id=favorite.tutor_id) }}">{{ favorite.tutor.username }}</a>
+                        <a href="{{ url_for('toggle_favorite', tutor_id=favorite.tutor_id) }}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Ваше избранное пусто</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Для репетитора -->
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Мои услуги</h5>
+                <a href="{{ url_for('publish_service') }}" class="btn btn-success">Добавить услугу</a>
+            </div>
+            <div class="card-body">
+                {% if courses %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Предмет</th>
+                                <th>Цена</th>
+                                <th>Длительность</th>
+                                <th>Уровень</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr>
+                                <td>{{ course.title }}</td>
+                                <td>{{ course.subject }}</td>
+                                <td>{{ course.price }} руб.</td>
+                                <td>{{ course.duration }} мин.</td>
+                                <td>{{ course.level if course.level else 'Любой' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">У вас пока нет опубликованных услуг</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Запросы на бронирование</h5>
+            </div>
+            <div class="card-body">
+                {% if bookings %}
+                <ul class="list-group">
+                    {% for booking in bookings %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ booking.student.username }}</strong> - {{ booking.course.title }}
+                                <br>
+                                <small>{{ booking.booking_date }} в {{ booking.booking_time }}</small>
+                            </div>
+                            <div>
+                                {% if booking.status == 'pending' %}
+                                <a href="{{ url_for('manage_booking', booking_id=booking.id, action='confirm') }}" class="btn btn-sm btn-success">Подтвердить</a>
+                                <a href="{{ url_for('manage_booking', booking_id=booking.id, action='cancel') }}" class="btn btn-sm btn-danger">Отклонить</a>
+                                {% elif booking.status == 'confirmed' %}
+                                <span class="badge bg-success">Подтверждено</span>
+                                <a href="{{ url_for('chat_room', recipient_id=booking.student_id) }}" class="btn btn-sm btn-info">Чат</a>
+                                <a href="{{ url_for('manage_booking', booking_id=booking.id, action='complete') }}" class="btn btn-sm btn-primary">Завершить</a>
+                                {% elif booking.status == 'completed' %}
+                                <span class="badge bg-info">Завершено</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Нет запросов на бронирование</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Отзывы</h5>
+                {% if avg_rating %}
+                <div class="mt-2">
+                    <span class="h4">{{ avg_rating }}</span>
+                    <span class="text-warning">
+                        {% for i in range(avg_rating|int) %}
+                        ★
+                        {% endfor %}
+                        {% for i in range(5 - avg_rating|int) %}
+                        ☆
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if reviews %}
+                <div class="list-group">
+                    {% for review in reviews %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ review.reviewer.username }}</strong>
+                            <span class="text-warning">
+                                {% for i in range(review.rating) %}
+                                ★
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <p class="mb-0">{{ review.comment }}</p>
+                        <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">Пока нет отзывов</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Модальное окно для изменения роли -->
+<div class="modal fade" id="changeRoleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменить роль</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('change_role') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Выберите новую роль:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="new_role" id="newRoleStudent" value="student" {% if user.role == 'student' %}checked{% endif %}>
+                            <label class="form-check-label" for="newRoleStudent">Студент</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="new_role" id="newRoleTutor" value="tutor" {% if user.role == 'tutor' %}checked{% endif %}>
+                            <label class="form-check-label" for="newRoleTutor">Репетитор</label>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Внимание!</strong> Если вы измените роль с репетитора на студента, все ваши опубликованные услуги будут удалены.
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

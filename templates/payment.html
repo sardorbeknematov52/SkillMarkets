@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Оплата - {{ booking.course.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Оплата занятия</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h5>{{ booking.course.title }}</h5>
+                    <p class="text-muted">{{ booking.course.description }}</p>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Репетитор:</strong> {{ booking.tutor.username }}</p>
+                            <p><strong>Дата:</strong> {{ booking.booking_date }}</p>
+                            <p><strong>Время:</strong> {{ booking.booking_time }}</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h3 class="text-primary">{{ booking.course.price }} руб.</h3>
+                            <p class="text-muted">Длительность: {{ booking.duration }} мин.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="POST" action="{{ url_for('payment', booking_id=booking.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label">Выберите способ оплаты</label>
+                        
+                        {% if payment_methods %}
+                        <div class="list-group mb-3">
+                            {% for method in payment_methods %}
+                            <label class="list-group-item d-flex gap-3">
+                                <input class="form-check-input flex-shrink-0" type="radio" name="payment_method_id" value="{{ method.id }}" {% if loop.first %}checked{% endif %}>
+                                <div class="d-flex gap-3 w-100 justify-content-between">
+                                    <div>
+                                        <h6 class="mb-0">
+                                            {% if method.method_type == 'card' %}
+                                            <i class="bi bi-credit-card"></i> Карты {{ method.card_brand }} **** {{ method.card_last4 }}
+                                            {% else %}
+                                            {{ method.method_type }}
+                                            {% endif %}
+                                        </h6>
+                                        {% if method.is_default %}
+                                        <small class="text-muted">Основной способ оплаты</small>
+                                        {% endif %}
+                                    </div>
+                                    {% if method.expiry_month and method.expiry_year %}
+                                    <small class="text-muted">{{ method.expiry_month }}/{{ method.expiry_year }}</small>
+                                    {% endif %}
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            У вас нет сохраненных способов оплаты. Добавьте карту ниже.
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Добавить новую карту</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="card_number" class="form-label">Номер карты</label>
+                                    <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="expiry" class="form-label">Срок действия</label>
+                                        <input type="text" class="form-control" id="expiry" name="expiry" placeholder="MM/YY" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cvv" class="form-label">CVV</label>
+                                        <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cardholder_name" class="form-label">Имя держателя карты</label>
+                                    <input type="text" class="form-control" id="cardholder_name" name="cardholder_name" placeholder="Иван Иванов" required>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary w-100" id="add-card-btn">Сохранить карту</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Внимание:</strong> После оплаты бронирование будет считаться активным. 
+                        Отмена возможна только за 24 часа до начала занятия.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle"></i> Оплатить {{ booking.course.price }} руб.
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Валидация карты (демо)
+document.getElementById('add-card-btn').addEventListener('click', function() {
+    const cardNumber = document.getElementById('card_number').value;
+    const expiry = document.getElementById('expiry').value;
+    const cvv = document.getElementById('cvv').value;
+    
+    if (cardNumber.length < 16) {
+        alert('Неверный номер карты');
+        return;
+    }
+    
+    if (!expiry.match(/^\d{2}\/\d{2}$/)) {
+        alert('Неверный формат срока действия (ММ/ГГ)');
+        return;
+    }
+    
+    if (cvv.length !== 3) {
+        alert('Неверный CVV код');
+        return;
+    }
+    
+    alert('Карта успешно добавлена! Выберите её для оплаты.');
+});
+</script>
+{% endblock %}

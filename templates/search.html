@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Поиск - SkillMarket{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Поиск</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="GET" action="{{ url_for('search') }}" class="d-flex">
+            <input type="hidden" name="type" value="{{ search_type }}">
+            <input type="text" name="q" class="form-control me-2" placeholder="Поиск..." value="{{ query }}">
+            <button type="submit" class="btn btn-primary">Найти</button>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group">
+            <a href="{{ url_for('search', type='tutor', q=query) }}" class="btn btn-outline-primary {% if search_type == 'tutor' %}active{% endif %}">Репетиторы</a>
+            <a href="{{ url_for('search', type='course', q=query) }}" class="btn btn-outline-primary {% if search_type == 'course' %}active{% endif %}">Курсы</a>
+        </div>
+    </div>
+</div>
+
+{% if search_type == 'tutor' %}
+<!-- Поиск репетиторов -->
+<h3>Репетиторы</h3>
+{% if results %}
+<div class="row">
+    {% for tutor in results %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ tutor.username }}</h5>
+                <p class="card-text">{{ tutor.bio[:150] }}...</p>
+                <div class="d-flex justify-content-between">
+                    {% set avg_rating = tutor.reviews_received|length > 0 and (tutor.reviews_received|map(attribute='rating')|sum / tutor.reviews_received|length)|round(1) or None %}
+                    {% if avg_rating %}
+                    <span class="text-warning">
+                        {{ avg_rating }}
+                        {% for i in range(avg_rating|int) %}
+                        ★
+                        {% endfor %}
+                    </span>
+                    {% endif %}
+                    <a href="{{ url_for('tutor_profile', tutor_id=tutor.id) }}" class="btn btn-sm btn-primary">Посмотреть</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">Репетиторы не найдены</div>
+{% endif %}
+{% else %}
+<!-- Поиск курсов -->
+<h3>Курсы</h3>
+{% if results %}
+<div class="row">
+    {% for course in results %}
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.title }}</h5>
+                <p class="card-text">{{ course.description[:200] }}...</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Репетитор: {{ course.tutor.username }}</small><br>
+                        <small class="text-muted">Предмет: {{ course.subject }}</small><br>
+                        <small class="text-muted">Длительность: {{ course.duration }} мин.</small>
+                    </div>
+                    <div class="text-end">
+                        <h5 class="mb-0">{{ course.price }} руб.</h5>
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm btn-success">Забронировать</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">Курсы не найдены</div>
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Оставить отзыв - SkillMarket{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Оставить отзыв</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h5>Занятие: {{ booking.course.title }}</h5>
+                    <p><strong>Репетитор:</strong> {{ booking.tutor.username }}</p>
+                    <p><strong>Дата:</strong> {{ booking.booking_date }} в {{ booking.booking_time }}</p>
+                    <p><strong>Длительность:</strong> {{ booking.duration }} мин.</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('submit_review', booking_id=booking.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label">Ваша оценка</label>
+                        <div class="rating-stars d-flex gap-2">
+                            <input type="radio" id="star5" name="rating" value="5" required>
+                            <label for="star5" class="star">★</label>
+                            
+                            <input type="radio" id="star4" name="rating" value="4">
+                            <label for="star4" class="star">★</label>
+                            
+                            <input type="radio" id="star3" name="rating" value="3">
+                            <label for="star3" class="star">★</label>
+                            
+                            <input type="radio" id="star2" name="rating" value="2">
+                            <label for="star2" class="star">★</label>
+                            
+                            <input type="radio" id="star1" name="rating" value="1">
+                            <label for="star1" class="star">★</label>
+                        </div>
+                        <div class="form-text">Выберите оценку от 1 до 5 звезд</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Комментарий</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="5" required placeholder="Расскажите о вашем опыте..."></textarea>
+                        <div class="form-text">Минимум 20 символов</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Важно:</strong> Ваш отзыв поможет другим студентам сделать правильный выбор. 
+                        Пожалуйста, будьте объективны и конструктивны.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Отправить отзыв</button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-stars {
+    font-size: 2.5rem;
+}
+
+.rating-stars input[type="radio"] {
+    display: none;
+}
+
+.rating-stars label.star {
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.3s;
+}
+
+.rating-stars input[type="radio"]:checked ~ label.star,
+.rating-stars label.star:hover,
+.rating-stars label.star:hover ~ label.star {
+    color: #ffc107;
+}
+</style>
+{% endblock %}

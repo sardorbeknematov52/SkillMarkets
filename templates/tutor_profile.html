@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tutor.username }} - SkillMarket{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>{{ tutor.username }}</h2>
+        <p class="lead">{{ tutor.bio }}</p>
+        
+        {% if avg_rating %}
+        <div class="mb-3">
+            <h4>Рейтинг: {{ avg_rating }}</h4>
+            <span class="text-warning">
+                {% for i in range(avg_rating|int) %}
+                ★
+                {% endfor %}
+                {% for i in range(5 - avg_rating|int) %}
+                ☆
+                {% endfor %}
+            </span>
+            <span class="ms-2">({{ reviews|length }} отзывов)</span>
+        </div>
+        {% endif %}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Услуги</h5>
+            </div>
+            <div class="card-body">
+                {% if courses %}
+                <div class="list-group">
+                    {% for course in courses %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ course.title }}</h6>
+                                <p class="mb-1">{{ course.description }}</p>
+                                <small class="text-muted">Предмет: {{ course.subject }}</small><br>
+                                <small class="text-muted">Длительность: {{ course.duration }} мин.</small><br>
+                                <small class="text-muted">Уровень: {{ course.level if course.level else 'Любой' }}</small>
+                            </div>
+                            <div class="text-end">
+                                <h5 class="mb-2">{{ course.price }} руб.</h5>
+                                {% if 'user_id' in session and session.role == 'student' %}
+                                <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm btn-success">Забронировать</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">У этого репетитора пока нет опубликованных услуг</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Отзывы</h5>
+            </div>
+            <div class="card-body">
+                {% if reviews %}
+                <div class="list-group">
+                    {% for review in reviews %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ review.reviewer.username }}</strong>
+                            <span class="text-warning">
+                                {% for i in range(review.rating) %}
+                                ★
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <p class="mb-1">{{ review.comment }}</p>
+                        <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">Пока нет отзывов</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-body text-center">
+                <h4>{{ tutor.username }}</h4>
+                <p class="text-muted mb-3">Репетитор</p>
+                
+                {% if 'user_id' in session and session.user_id != tutor.id %}
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('chat_room', recipient_id=tutor.id) }}" class="btn btn-primary">Написать сообщение</a>
+                    
+                    {% if session.role == 'student' %}
+                    <a href="{{ url_for('subscribe', tutor_id=tutor.id) }}" class="btn btn-{{ 'outline-danger' if is_subscribed else 'outline-success' }}">
+                        {{ 'Отписаться' if is_subscribed else 'Подписаться' }}
+                    </a>
+                    
+                    <a href="{{ url_for('toggle_favorite', tutor_id=tutor.id) }}" class="btn btn-{{ 'outline-danger' if is_favorite else 'outline-warning' }}">
+                        {{ 'Удалить из избранного' if is_favorite else 'В избранное' }}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="text-start">
+                    <h6>Статистика:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Услуг:</strong> {{ courses|length }}</li>
+                        <li><strong>Отзывов:</strong> {{ reviews|length }}</li>
+                        <li><strong>На платформе с:</strong> {{ tutor.created_at.strftime('%B %Y') }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

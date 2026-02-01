@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Бронирование - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Бронирование занятия</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h5>{{ course.title }}</h5>
+                    <p class="text-muted">{{ course.description }}</p>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Репетитор:</strong> {{ tutor.username }}</p>
+                            <p><strong>Предмет:</strong> {{ course.subject }}</p>
+                            <p><strong>Уровень:</strong> {{ course.level if course.level else 'Любой' }}</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h3 class="text-primary">{{ course.price }} руб.</h3>
+                            <p class="text-muted">Длительность: {{ course.duration }} мин.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="POST" action="{{ url_for('book_course', course_id=course.id) }}">
+                    <div class="mb-3">
+                        <label for="booking_date" class="form-label">Дата занятия</label>
+                        <input type="date" class="form-control" id="booking_date" name="booking_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="booking_time" class="form-label">Время занятия</label>
+                        <input type="time" class="form-control" id="booking_time" name="booking_time" required>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Важно:</strong> После отправки запроса, репетитор должен подтвердить бронирование. 
+                        Вы получите уведомление о подтверждении.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Отправить запрос</button>
+                        <a href="{{ url_for('tutor_profile', tutor_id=tutor.id) }}" class="btn btn-outline-secondary">Назад к профилю</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('booking_date');
+    
+    if (dateInput) {
+        dateInput.setAttribute('min', today);
+    }
+    
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const selectedDate = new Date(dateInput.value);
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            selectedDate.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < now) {
+                e.preventDefault();
+                alert('Нельзя забронировать занятие на прошедшую дату!');
+                dateInput.focus();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

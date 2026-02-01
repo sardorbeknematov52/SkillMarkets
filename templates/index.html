@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron text-center bg-light p-5 mb-4">
+    <h1 class="display-4">Добро пожаловать на SkillMarket</h1>
+    <p class="lead">Платформа для поиска и предоставления репетиторских услуг</p>
+    <hr class="my-4">
+    <p>Найдите идеального репетитора или предложите свои услуги</p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('search') }}" role="button">Начать поиск</a>
+    {% if 'user_id' not in session %}
+    <a class="btn btn-success btn-lg ms-2" href="{{ url_for('register') }}" role="button">Зарегистрироваться</a>
+    {% endif %}
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Для студентов</h5>
+                <p class="card-text">Найдите лучших репетиторов по любому предмету</p>
+                <a href="{{ url_for('search') }}" class="btn btn-outline-primary">Найти репетитора</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Для репетиторов</h5>
+                <p class="card-text">Публикуйте свои услуги и находите учеников</p>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-success">Стать репетитором</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Безопасные платежи</h5>
+                <p class="card-text">Надежная система оплаты и бронирования</p>
+                <a href="#" class="btn btn-outline-info">Узнать больше</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-4">Популярные репетиторы</h2>
+<div class="row">
+    {% for tutor in tutors %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ tutor.username }}</h5>
+                <p class="card-text">{{ tutor.bio[:100] }}...</p>
+                <a href="{{ url_for('tutor_profile', tutor_id=tutor.id) }}" class="btn btn-primary">Посмотреть профиль</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
